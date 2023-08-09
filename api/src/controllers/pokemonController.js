@@ -1,53 +1,96 @@
-const { Pokemon } = require('../db'); // Importa el modelo Pokemon
+const { Pokemon, Type } = require('../db')
+const { Op } = require('sequelize')
+const {
+	validateString,
+	validateNumber,
+	validateURL,
+	typeString,
+	validateUUIDv4,
+} = require('../utils/validations')
+const axios = require('axios')
+const pokemonFormatter = require('../utils/formatter')
 
-// Controlador para obtener todos los Pokemons
-const getPokemons = async (req, res) => {
-  try {
-    const pokemons = await Pokemon.findAll();
-    res.status(200).json(pokemons);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener los Pokemons' });
-  }
-};
+const getAllPokemons = async () => {
+	const DBPokemons = await Pokemon.findAll()
+	const initialURL = 'https://pokeapi.co/api/v2/pokemon/'
+	let apiPokemons = []
 
-// Controlador para obtener un Pokemon por su ID
-const getPokemonById = async (req, res) => {
-  const { idPokemon } = req.params;
-  try {
-    const pokemon = await Pokemon.findByPk(idPokemon);
-    if (!pokemon) {
-      res.status(404).json({ message: 'Pokemon no encontrado' });
-    } else {
-      res.status(200).json(pokemon);
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Error al obtener el Pokemon' });
-  }
-};
+	const getPokemonByList = async (url) => {
+		const allApiPokemons = await axios.get(url)
+		const allApiPokemonsArray = allApiPokemons.data.results
 
-// Controlador para crear un nuevo Pokemon
-const createPokemon = async (req, res) => {
-  const { name, imagen, vida, ataque, defensa, velocidad, altura, peso } = req.body;
-  try {
-    // Crea el pokemon en la base de datos
-    const newPokemon = await Pokemon.create({
-      name,
-      imagen,
-      vida,
-      ataque,
-      defensa,
-      velocidad,
-      altura,
-      peso,
-    });
-    res.status(201).json(newPokemon);
-  } catch (error) {
-    res.status(500).json({ message: 'Error al crear el Pokemon' });
-  }
-};
+		const apiPokemons = await Promise.all(
+			allApiPokemonsArray.map(async (pokemon) => {
+				const id = pokemon.url.split('/').slice(-2, -1)[0]
+				const apiPokemon = await getPokemonById(id)
+				// console.log(id)
+				return apiPokemon
+			})
+		)
 
-module.exports = {
-  getPokemons,
-  getPokemonById,
-  createPokemon,
-};
+		if (allApiPokemons.data.next !== null) {
+			const nextApiPokemons = await getPokemonByList(allApiPokemons.data.next)
+			return [...apiPokemons, ...nextApiPokemons]
+		}
+
+		return apiPokemons
+	}
+
+	const apiPokemon = await getPokemonByList(initialURL)
+	const allPokemons = [...DBPokemons, ...apiPokemon]
+	return allPokemons
+}
+
+const getPokemonByName = async (name) => {
+	const nombre = validateString(name)
+	let pokemon = await Pokemon.findOne({
+		where: { Nombre: { [Op.iLike]: `%${nombre}%` } },
+		include: [{ model: Type, attributes: ['Nombre'], through: { attributes: [] } }],
+	})
+	if (pokemon === null) {
+		apiPokemon = await axios(`https://pokeapi.co/api/v2/pokemon/${nombre}`)
+		if (apiPokemon.data === 'Not Found') return `${nombre} no encontrado`
+		pokemon = pokemonFormatter(apiPokemon.data)
+	}
+
+	return pokemon
+}
+
+const getPokemonById = async (id) => {
+	if (!id) throw Error('Hey! necesito el ID!')
+	if (isNaN(id)) {
+		validateUUIDv4(id)
+		const pokemon = await Pokemon.findOne({
+			where: { ID: { id } },
+			include: [{ model: Type, attributes: ['Nombre'], through: { attributes: [] } }],
+		})
+		const types = await Pokemon.getTypes()
+		return { ...pokemon, Type: [...types] }
+	} else {
+		const numberId = validateNumber(id)
+		const pokemon = await axios(`https://pokeapi.co/api/v2/pokemon/${numberId}`)
+		const formattedPokemon = pokemonFormatter(pokemon.data)
+		return formattedPokemon
+	}
+}
+
+const createPokemon = async (Nombre, Imagen, Vida, Ataque, Defensa, Velocidad, Altura, Peso, Type) => {
+	validateString(Nombre)
+	const existence = await axios(`https://pokeapi.co/api/v2/pokemon/${nombre}`)
+	if (existence) throw Error('Ya existe un Pokemon con ese nombre.')
+	validateNumber(Vida)
+	validateNumber(Ataque)
+	validateNumber(Defensa)
+	validateURL(Imagen)
+	typeString(Velocidad)
+	typeString(Altura)
+	typeString(Peso)
+	if (!Nombre || !Imagen || !Vida || !Ataque || !Defensa || !Type) throw Error('Datos incompletos.')
+	const newPokemon = await Pokemon.create({ Nombre, Imagen, Vida, Ataque, Defensa, Velocidad, Altura, Peso })
+	Type.forEach((type) => {
+		newPokemon.addType(type)
+	})
+	return newPokemon
+}
+
+module.exports = { getPokemonByName, getAllPokemons, getPokemonById, createPokemon };

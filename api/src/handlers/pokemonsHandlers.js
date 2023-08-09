@@ -1,9 +1,9 @@
-const { Type } = require('../db'); // Importa el modelo Type
+const { Type } = require('../db');
 
 // Controlador para tener todos los Pokemons incluyendo sus tipos
 const getPokemons = async (req, res) => {
   try {
-    const pokemons = await Pokemon.findAll({
+    const pokemons = await pokemons.findAll({
       include: Type,
     });
     res.status(200).json(pokemons);
@@ -12,11 +12,11 @@ const getPokemons = async (req, res) => {
   }
 };
 
-// Controlador para tener un Pokemon por su ID incluyendo sus tipos
+// Controlador Pokemon por su ID incluyendo sus tipos
 const getPokemonById = async (req, res) => {
   const { idPokemon } = req.params;
   try {
-    const pokemon = await Pokemon.findByPk(idPokemon, {
+    const pokemon = await pokemon.findByPk(idPokemon, {
       include: Type,
     });
     if (!pokemon) {
