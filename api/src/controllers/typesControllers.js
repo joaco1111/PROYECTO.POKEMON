@@ -1,6 +1,6 @@
 const { Type } = require('../db')
 const { validateNumber } = require('../utils/validations')
-const { getPokemonById } = require('./pokemonsControllers')
+const { getPokemonById } = require('./pokemonController')
 const axios = require('axios')
 
 const getPokemonsByType = async (type) => {

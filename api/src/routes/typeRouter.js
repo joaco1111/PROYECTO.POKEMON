@@ -1,9 +1,7 @@
-const { Router } = require('express')
+const { Router } = require('express');
+const typeRouter = Router();
+const { getTypesHandler } = require('../handlers/typesHandlers');
 
-const typeRouter = Router()
+typeRouter.get('/', getTypesHandler);
 
-const { getTypesHandler } = require('../handlers/typesHandlers')
-
-typeRouter.get('/', getTypesHandler)
-
-module.exports = typeRouter
+module.exports = typeRouter;

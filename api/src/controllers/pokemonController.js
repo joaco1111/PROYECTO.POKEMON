@@ -92,5 +92,4 @@ const createPokemon = async (Nombre, Imagen, Vida, Ataque, Defensa, Velocidad, A
 	})
 	return newPokemon
 }
-
 module.exports = { getPokemonByName, getAllPokemons, getPokemonById, createPokemon };

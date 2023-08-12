@@ -1,6 +1,8 @@
 const { Router } = require('express');
 const pokemonRouter = Router();
-const { getPokemonByName, getAllPokemons, getPokemonById, createPokemon } = require('../handlers/pokemonControllers'); // Importa las funciones correctas desde pokemonControllers.js
+const { getPokemonByName, getAllPokemons, getPokemonById, createPokemon } = require('../controllers/pokemonController'); // Importa las funciones correctas desde pokemonControllers.js
+//const { getPokemons, getPokemonById, createPokemon } = require('../handlers/pokemonControllers');
+
 
 pokemonRouter.get('/', async (req, res) => {
   try {

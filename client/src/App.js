@@ -1,11 +1,21 @@
-import './App.css';
+import { Route, Routes, useLocation } from 'react-router-dom'
+import { Detail, Form, Home, Landing, Nav } from './views'
 
-function App() {
-  return (
-    <div className="App">
-      <h1>Henry Pokemon</h1>
-    </div>
-  );
+const App = () => {
+	const { pathname } = useLocation()
+
+	return (
+		<>
+			{pathname !== '/' && <Nav />}
+
+			<Routes>
+				<Route path="/" element={<Landing />} />
+				<Route path="/home" element={<Home />} />
+				<Route path="/detail/:id" element={<Detail />} />
+				<Route path="/create" element={<Form />} />
+			</Routes>
+		</>
+	)
 }
 
-export default App;
+export default App

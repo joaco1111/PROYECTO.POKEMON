@@ -1,6 +1,6 @@
 const { Type } = require('../db');
 
-// Controlador para tener todos los Pokemons incluyendo sus tipos
+// Pokemons y sus tipos
 const getPokemons = async (req, res) => {
   try {
     const pokemons = await pokemons.findAll({
@@ -12,7 +12,7 @@ const getPokemons = async (req, res) => {
   }
 };
 
-// Controlador Pokemon por su ID incluyendo sus tipos
+// Pokemon por su ID y sus tipos
 const getPokemonById = async (req, res) => {
   const { idPokemon } = req.params;
   try {

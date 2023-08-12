@@ -1,5 +1,5 @@
-const server = require('./src/app.js')
-const { conn } = require('./src/db.js')
+const server = require('./src/app')
+const { conn } = require('./src/db')
 require('dotenv').config()
 const { PORT } = process.env
 const { getTypesToDB } = require('./src/controllers/typesControllers.js')
